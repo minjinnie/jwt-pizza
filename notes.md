@@ -16,8 +16,8 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 |View profile page|dinerDashboard.tsx|[GET] /api/order|SELECT * FROM orders WHERE userId = ? ORDER BY created_at DESC;|
 |View franchise (as diner)|franchiseDashboard.tsx|[GET] /api/franchise/:userId|SELECT * FROM franchises WHERE userId = ?;<br>SELECT * FROM stores WHERE franchiseId IN (SELECT id FROM franchises WHERE userId = ?);|
 |Logout|none|[DELETE] /api/auth|none|
-|View about page|about.tsx|none|none|
-|View history page|history.tsx|none|none|
+|View About page|about.tsx|none|none|
+|View History page|history.tsx|none|none|
 |Login as franchisee<br/>(f@jwt.com, pw: franchisee)|login.tsx|[PUT] /api/auth|SELECT * FROM user WHERE email = ? AND password = ?;<br>SELECT role FROM userRole WHERE userId = ?;|
 |View franchise (as franchisee)|franchiseDashboard.tsx|[GET] /api/franchise/:userId|SELECT * FROM franchises WHERE userId = ?;<br>SELECT * FROM stores WHERE franchiseId IN (SELECT id FROM franchises WHERE userId = ?);|
 |Create a store|createStore.tsx|[POST] /api/franchise/:franchiseId/store|INSERT INTO stores (franchiseId, name, created_at) VALUES (?, ?, NOW());|
