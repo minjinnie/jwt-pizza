@@ -1,9 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import View from './view';
-import NotFound from './notFound';
-import { pizzaService } from '../service/service';
-import { Order, OrderHistory, Role, User } from '../service/pizzaService';
+import React from "react";
+import { Link } from "react-router-dom";
+import View from "./view";
+import NotFound from "./notFound";
+import { pizzaService } from "../service/service";
+import { Order, OrderHistory, Role, User } from "../service/pizzaService";
 
 interface Props {
   user: User | null;
@@ -44,13 +44,15 @@ export default function DinerDashboard(props: Props) {
         </div>
 
         <div className="my-4 text-lg text-orange-200 text-start grid grid-cols-5 gap-2">
-          <div className="font-semibold text-orange-400">name:</div> <div className="col-span-4">{props.user.name}</div>
-          <div className="font-semibold text-orange-400">email:</div> <div className="col-span-4">{props.user.email}</div>
-          <div className="font-semibold text-orange-400">role:</div>{' '}
+          <div className="font-semibold text-orange-400">name:</div>{" "}
+          <div className="col-span-4">{props.user.name}</div>
+          <div className="font-semibold text-orange-400">email:</div>{" "}
+          <div className="col-span-4">{props.user.email}</div>
+          <div className="font-semibold text-orange-400">role:</div>{" "}
           <div className="col-span-4">
             {props.user.roles.map((role, index) => (
               <span key={index}>
-                {index === 0 ? '' : ', '} {formatRole(role)}
+                {index === 0 ? "" : ", "} {formatRole(role)}
               </span>
             ))}
           </div>
@@ -58,16 +60,21 @@ export default function DinerDashboard(props: Props) {
 
         {orders?.length === 0 && (
           <div className="text-neutral-100">
-            How have you lived this long without having a pizza?{' '}
-            <Link className="text-orange-400 underline font-semibold" to="/menu">
+            How have you lived this long without having a pizza?{" "}
+            <Link
+              className="text-orange-400 underline font-semibold"
+              to="/menu"
+            >
               Buy one
-            </Link>{' '}
+            </Link>{" "}
             now!
           </div>
         )}
         {orders?.length > 0 && (
           <>
-            <div className="text-neutral-100">Here is your history of all the good times.</div>
+            <div className="text-neutral-100">
+              Here is your history of all the good times.
+            </div>
             <div className="bg-neutral-100 overflow-clip my-4">
               <div className="flex flex-col">
                 <div className="-m-1.5 overflow-x-auto">
@@ -76,13 +83,22 @@ export default function DinerDashboard(props: Props) {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="uppercase text-neutral-100 bg-slate-400 border-b-2 border-gray-500">
                           <tr>
-                            <th scope="col" className="px-6 py-3 text-start text-xs sm:text-sm font-medium">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-start text-xs sm:text-sm font-medium"
+                            >
                               ID
                             </th>
-                            <th scope="col" className="px-6 py-3 text-start text-xs sm:text-sm font-medium">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-start text-xs sm:text-sm font-medium"
+                            >
                               Price
                             </th>
-                            <th scope="col" className="px-6 py-3 text-start text-xs sm:text-sm font-medium">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-start text-xs sm:text-sm font-medium"
+                            >
                               Date
                             </th>
                           </tr>
@@ -90,9 +106,14 @@ export default function DinerDashboard(props: Props) {
                         <tbody className="divide-y divide-gray-200">
                           {orders.map((order, index) => (
                             <tr key={index} className="hover:bg-gray-100">
-                              <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm font-medium text-gray-800">{order.id}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm font-medium text-gray-800">
+                                {order.id}
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm text-gray-800">
-                                {order.items.reduce((a, c) => a + c.price, 0).toLocaleString()} ₿
+                                {order.items
+                                  .reduce((a, c) => a + c.price, 0)
+                                  .toLocaleString()}{" "}
+                                ₿
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm text-gray-800">
                                 {order.date.toLocaleString()}
