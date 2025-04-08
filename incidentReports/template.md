@@ -1,134 +1,95 @@
-# Incident: YYYY-MM-DD HH-mm-ss
+# Incident: 2025-04-08 12:08:00
 
 ## Summary
 
-> [!NOTE]
-> Write a summary of the incident in a few sentences. Include what happened, why, the severity of the incident and how long the impact lasted.
+Between 12:08 and 12:25 UTC on April 8, 2025, the JWT Pizza service experienced a chaos test in the form of repeated login failures using an unknown user (`unknown@jwt.com`) and a flood of `GET /api/order/menu` requests. These requests were synthetic and unauthenticated, designed to simulate a system under stress.
 
-```md
-**EXAMPLE**:
-
-Between the hour of {time range of incident, e.g. 15:45 and 16:35} on {DATE}, {NUMBER} users encountered {EVENT SYMPTOMS}. The event was triggered by a {CHANGE} at {TIME OF CHANGE THAT CAUSED THE EVENT}. The {CHANGE} contained {DESCRIPTION OF OR REASON FOR THE CHANGE, such as a change in code to update a system}.
-
-A bug in this code caused {DESCRIPTION OF THE PROBLEM}. The event was detected by {MONITORING SYSTEM}. The team started working on the event by {RESOLUTION ACTIONS TAKEN}. This {SEVERITY LEVEL} incident affected {X%} of users.
-
-There was further impact as noted by {e.g. NUMBER OF SUPPORT TICKETS SUBMITTED, SOCIAL MEDIA MENTIONS, CALLS TO ACCOUNT MANAGERS} were raised in relation to this incident.
-```
+The system responded correctly in all cases, returning appropriate `404` and `200` responses. However, no alerts were triggered, revealing gaps in our observability strategy. This low-severity incident did not affect real users, but highlighted the need for better alerting rules.
 
 ## Detection
 
-> [!NOTE]
-> When did the team detect the incident? How did they know it was happening? How could we improve time-to-detection? Consider: How would we have cut that time by half?
+This incident was detected manually while reviewing Grafana and Loki logs. No alert was triggered during the event.
 
-```md
-**EXAMPLE**:
+While investigating other logs, the team noticed an unusual number of `unknown user` login failures and high-frequency menu queries.
 
-This incident was detected when the {ALERT TYPE} was triggered and {TEAM/PERSON} were paged.
-
-Next, {SECONDARY PERSON} was paged, because {FIRST PERSON} didn't own the service writing to the disk, delaying the response by {XX MINUTES/HOURS}.
-
-{DESCRIBE THE IMPROVEMENT} will be set up by {TEAM OWNER OF THE IMPROVEMENT} so that {EXPECTED IMPROVEMENT}.
-```
+To improve detection time in the future, we have added alert rules that trigger if more than 5 login failures occur within one minute or if more than 10 unauthenticated menu requests happen within two minutes. These will be owned and maintained by the JWT Pizza DevOps.
 
 ## Impact
 
-> [!NOTE]
-> Describe how the incident impacted internal and external users during the incident. Include how many support cases were raised.
+For 17 minutes between 12:08 and 12:25 UTC on 04/08/25, the JWT Pizza service experienced a controlled chaos test. No real users were impacted.
 
-```md
-**EXAMPLE**:
-
-For {XXhrs XX minutes} between {XX:XX UTC and XX:XX UTC} on {MM/DD/YY}, {SUMMARY OF INCIDENT} our users experienced this incident.
-
-This incident affected {XX} customers (X% OF {SYSTEM OR SERVICE} USERS), who experienced {DESCRIPTION OF SYMPTOMS}.
-
-{XX NUMBER OF SUPPORT TICKETS AND XX NUMBER OF SOCIAL MEDIA POSTS} were submitted.
-```
+- 0 support tickets
+- 0 social media mentions
+- 0 real authentication or order failures
 
 ## Timeline
 
-> [!NOTE]
-> Detail the incident timeline. We recommend using UTC to standardize for timezones.
-> Include any notable lead-up events, any starts of activity, the first known impact, and escalations. Note any decisions or changed made, and when the incident ended, along with any post-impact events of note.
+All times are UTC:
 
-```md
-**EXAMPLE**:
-
-All times are UTC.
-
-- _11:48_ - K8S 1.9 upgrade of control plane is finished
-- _12:46_ - Upgrade to V1.9 completed, including cluster-auto scaler and the BuildEng scheduler instance
-- _14:20_ - Build Engineering reports a problem to the KITT Disturbed
-- _14:27_ - KITT Disturbed starts investigating failures of a specific EC2 instance (ip-203-153-8-204)
-- _14:42_ - KITT Disturbed cordons the node
-- _14:49_ - BuildEng reports the problem as affecting more than just one node. 86 instances of the problem show failures are more systemic
-- _15:00_ - KITT Disturbed suggests switching to the standard scheduler
-- _15:34_ - BuildEng reports 200 pods failed
-- _16:00_ - BuildEng kills all failed builds with OutOfCpu reports
-- _16:13_ - BuildEng reports the failures are consistently recurring with new builds and were not just transient.
-- _16:30_ - KITT recognize the failures as an incident and run it as an incident.
-- _16:36_ - KITT disable the Escalator autoscaler to prevent the autoscaler from removing compute to alleviate the problem.
-- _16:40_ - KITT confirms ASG is stable, cluster load is normal and customer impact resolved.
-```
+- 12:08 - First login attempt with `unknown@jwt.com` triggers a 404
+- 12:15 - High volume of `GET /api/order/menu` queries begins
+- 12:25 - Incident identified as chaos test and resolved
 
 ## Response
 
-> [!NOTE]
-> Who responded to the incident? When did they respond, and what did they do? Note any delays or obstacles to responding.
-
-```md
-**EXAMPLE**:
-
-After receiving a page at {XX:XX UTC}, {ON-CALL ENGINEER} came online at {XX:XX UTC} in {SYSTEM WHERE INCIDENT INFO IS CAPTURED}.
-
-This engineer did not have a background in the {AFFECTED SYSTEM} so a second alert was sent at {XX:XX UTC} to {ESCALATIONS ON-CALL ENGINEER} into the who came into the room at {XX:XX UTC}.
-```
+After reviewing logs during regular monitoring, the incident was identified by the on-call engineer. Because the service was functioning correctly and the traffic was from a Chaos Monkey, no rollback or patch was required. The issue was acknowledged and logged.
 
 ## Root cause
 
-> [!NOTE]
-> Note the final root cause of the incident, the thing identified that needs to change in order to prevent this class of incident from happening again.
-
-```md
-**EXAMPLE**:
-
-A bug in connection pool handling led to leaked connections under failure conditions, combined with lack of visibility into connection state.
-```
+A chaos test simulated login attempts using a non-existent user and high-frequency access to the menu endpoint. The root cause was not a bug in the code, but a **lack of sensitive alerting rules** to detect abnormal patterns in traffic and login failures.
 
 ## Resolution
 
-> [!NOTE]
-> Describe how the service was restored and the incident was deemed over. Detail how the service was successfully restored and you knew how what steps you needed to take to recovery.
-> Depending on the scenario, consider these questions: How could you improve time to mitigation? How could you have cut that time by half?
+The system handled the chaos test as designed. The only issue was observability-related. The resolution involved:
 
-```md
-**EXAMPLE**:
-By Increasing the size of the BuildEng EC3 ASG to increase the number of nodes available to support the workload and reduce the likelihood of scheduling on oversubscribed nodes
-
-Disabled the Escalator autoscaler to prevent the cluster from aggressively scaling-down
-Reverting the Build Engineering scheduler to the previous version.
-```
+- Reviewing logs and confirming the incident scope
+- Enhancing alerting thresholds and queries
 
 ## Prevention
 
-> [!NOTE]
-> Now that you know the root cause, can you look back and see any other incidents that could have the same root cause? If yes, note what mitigation was attempted in those incidents and ask why this incident occurred again.
+No previous incidents share this specific root cause. This test has shown that although our system is resilient to malformed and repeated input, our monitoring was not responsive to behavioral anomalies.
 
-```md
-**EXAMPLE**:
+## Action Items (Updated for Grafana Alert Rule system)
 
-This same root cause resulted in incidents HOT-13432, HOT-14932 and HOT-19452.
+### ✅ Maintain and Improve Existing Request Latency Alert
+
+- **Rule name**: `Request latency`
+- **Metric**: `latency_milliseconds_total{source="jwt-pizza-service", key="endpoint"}`
+- **Condition**: If latency > 500ms within a 1-minute window
+- **Pending period**: 1 minute
+- **Folder**: `GrafanaCloud`
+- **Contact point**: `JWT Pizza DevOps`
+- ⏱ Evaluated every 1 minute
+- 🔔 Used to detect slow responses from API endpoints like `/api/order/menu`
+
+---
+
+### ✅ Add New Alert Rule for Login Failure Spike
+
+- **Rule name**: `Login Failure Spike`
+- **Metric**: Derived from Loki logs that contain `"unknown user"`
+- **Query example** (Loki/LogQL):
+```logql
+{source="jwt-pizza-service"} |= "unknown user"
+| count_over_time(1m)
 ```
+- **Alert condition**: Trigger alert when login failures > 5 in 1 minute
+- **Suggested action**: Integrate into Prometheus via Loki or Tempo; track using `login_failures_total` and alert on high counts
+- **Evaluation group**: `jwt-pizza`
+- **Contact point**: `JWT Pizza DevOps`
 
-## Action items
+---
 
-> [!NOTE]
-> Describe the corrective action ordered to prevent this class of incident in the future. Note who is responsible and when they have to complete the work and where that work is being tracked.
+### ✅ Add New Alert Rule for Menu Query Spike
 
-```md
-**EXAMPLE**:
-
-1. Manual auto-scaling rate limit put in place temporarily to limit failures
-1. Unit test and re-introduction of job rate limiting
-1. Introduction of a secondary mechanism to collect distributed rate information across cluster to guide scaling effects
+- **Rule name**: `Menu Query Spike`
+- **Metric**: Derived from logs or application counter (e.g., `menu_request_count`)
+- **Suggested alert condition**: More than 10 requests to `/api/order/menu` within a 2-minute window
+- **Example Prometheus expression**:  
+```promql
+rate(menu_request_count[2m]) > 0.08
 ```
+- **Pending period**: 1 minute
+- **Label**: `type=chaos-detection`
+- **Folder**: `GrafanaCloud`
+- **Contact point**: `JWT Pizza DevOps`
